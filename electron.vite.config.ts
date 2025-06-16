@@ -60,6 +60,11 @@ const config: UserConfig = {
                 '/@/shared': resolve('src/shared'),
             },
         },
+        server: {
+            host: '0.0.0.0',
+            port: 12001,
+            cors: true,
+        },
     },
 };
 
