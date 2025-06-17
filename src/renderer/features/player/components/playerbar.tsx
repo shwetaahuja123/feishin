@@ -91,15 +91,9 @@ export const Playerbar = () => {
     };
 
     const autoNextFn = useCallback(() => {
-        console.log('autoNextFn called - song ended naturally');
-        
-        // Check if we should stop after current song
         if (getStopAfterCurrent()) {
-            console.log('Stopping after current song as requested');
             resetStopAfterCurrent();
             
-            // Use proper stop functionality like immediate stop
-            // For web player, we need to reset the players and set time to 0
             const player1Ref = playersRef?.current?.player1;
             const player2Ref = playersRef?.current?.player2;
             
@@ -118,7 +112,6 @@ export const Playerbar = () => {
             return;
         }
         
-        console.log('Continuing to next song');
         const playerData = autoNext();
         updateSong(playerData.current.song);
     }, [autoNext, pause, setCurrentTime, playersRef]);

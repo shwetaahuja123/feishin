@@ -124,16 +124,12 @@ export const useCenterControls = (args: { playersRef: any }) => {
     const handleStop = useCallback(() => {
         const newCount = stopClickCount + 1;
         setStopClickCount(newCount);
-        
-        console.log(`Stop button clicked ${newCount} time(s)`);
 
         if (stopTimeoutRef.current) {
             clearTimeout(stopTimeoutRef.current);
         }
 
         if (newCount === 1) {
-            console.log('First click: Will stop after current song ends');
-            
             toast.show({
                 message: 'Will stop after current song ends. Click again to stop immediately.',
                 type: 'info',
@@ -143,12 +139,9 @@ export const useCenterControls = (args: { playersRef: any }) => {
             
             stopTimeoutRef.current = setTimeout(() => {
                 setStopClickCount(0);
-                console.log('Stop click counter reset');
             }, 3000);
             
         } else if (newCount === 2) {
-            console.log('Second click: Stopping immediately');
-            
             if (isMpvPlayer) {
                 mpvPlayer!.stop();
             } else {
@@ -211,11 +204,9 @@ export const useCenterControls = (args: { playersRef: any }) => {
 
     const handleAutoNext = useCallback(() => {
         if (getStopAfterCurrent()) {
-            console.log('Stopping after current song as requested');
             resetStopAfterCurrent();
             setStopClickCount(0);
             
-            // Use proper stop functionality like the immediate stop
             if (isMpvPlayer) {
                 mpvPlayer!.stop();
             } else {
