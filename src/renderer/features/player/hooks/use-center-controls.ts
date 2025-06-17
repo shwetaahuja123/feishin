@@ -1,11 +1,12 @@
 import isElectron from 'is-electron';
 import debounce from 'lodash/debounce';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { toast } from '/@/renderer/components';
 import { useScrobble } from '/@/renderer/features/player/hooks/use-scrobble';
 import { updateSong } from '/@/renderer/features/player/update-remote-song';
+import { getStopAfterCurrent, setStopAfterCurrent, resetStopAfterCurrent } from '/@/renderer/features/player/state/stop-after-current';
 import {
     useCurrentPlayer,
     useCurrentStatus,
@@ -31,6 +32,9 @@ const mediaSession = navigator.mediaSession;
 export const useCenterControls = (args: { playersRef: any }) => {
     const { t } = useTranslation();
     const { playersRef } = args;
+
+    const [stopClickCount, setStopClickCount] = useState(0);
+    const stopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const currentPlayer = useCurrentPlayer();
     const { autoNext, next, pause, play, previous, setCurrentIndex, setRepeat, setShuffle } =
@@ -118,15 +122,54 @@ export const useCenterControls = (args: { playersRef: any }) => {
     }, [isMpvPlayer, pause]);
 
     const handleStop = useCallback(() => {
-        if (isMpvPlayer) {
-            mpvPlayer!.stop();
-        } else {
-            stopPlayback();
+        const newCount = stopClickCount + 1;
+        setStopClickCount(newCount);
+        
+        console.log(`Stop button clicked ${newCount} time(s)`);
+
+        if (stopTimeoutRef.current) {
+            clearTimeout(stopTimeoutRef.current);
         }
 
-        setCurrentTime(0);
-        pause();
-    }, [isMpvPlayer, pause, setCurrentTime, stopPlayback]);
+        if (newCount === 1) {
+            console.log('First click: Will stop after current song ends');
+            
+            toast.show({
+                message: 'Will stop after current song ends. Click again to stop immediately.',
+                type: 'info',
+            });
+            
+            setStopAfterCurrent(true);
+            
+            stopTimeoutRef.current = setTimeout(() => {
+                setStopClickCount(0);
+                console.log('Stop click counter reset');
+            }, 3000);
+            
+        } else if (newCount === 2) {
+            console.log('Second click: Stopping immediately');
+            
+            if (isMpvPlayer) {
+                mpvPlayer!.stop();
+            } else {
+                stopPlayback();
+            }
+
+            setCurrentTime(0);
+            pause();
+            
+            setStopClickCount(0);
+            resetStopAfterCurrent();
+        }
+    }, [isMpvPlayer, pause, setCurrentTime, stopPlayback, stopClickCount]);
+
+    useEffect(() => {
+        return () => {
+            if (stopTimeoutRef.current) {
+                clearTimeout(stopTimeoutRef.current);
+            }
+        };
+    }, []);
 
     const handleToggleShuffle = useCallback(() => {
         if (shuffleStatus === PlayerShuffle.NONE) {
@@ -167,6 +210,23 @@ export const useCenterControls = (args: { playersRef: any }) => {
     }, []);
 
     const handleAutoNext = useCallback(() => {
+        if (getStopAfterCurrent()) {
+            console.log('Stopping after current song as requested');
+            resetStopAfterCurrent();
+            setStopClickCount(0);
+            
+            // Use proper stop functionality like the immediate stop
+            if (isMpvPlayer) {
+                mpvPlayer!.stop();
+            } else {
+                stopPlayback();
+            }
+            
+            setCurrentTime(0);
+            pause();
+            return;
+        }
+
         const isLastTrack = checkIsLastTrack();
 
         const handleRepeatAll = {
@@ -341,7 +401,6 @@ export const useCenterControls = (args: { playersRef: any }) => {
             ? usePlayerStore.getState().current.time
             : currentPlayerRef.getCurrentTime();
 
-        // Reset the current track more than 10 seconds have elapsed
         if (currentTime >= 10) {
             setCurrentTime(0, true);
             handleScrobbleFromSongRestart(currentTime);
@@ -756,6 +815,7 @@ export const useCenterControls = (args: { playersRef: any }) => {
     });
 
     return {
+        handleAutoNext,
         handleNextTrack,
         handlePause,
         handlePlay,

@@ -7,6 +7,7 @@ import { LeftControls } from '/@/renderer/features/player/components/left-contro
 import { RightControls } from '/@/renderer/features/player/components/right-controls';
 import { PlayersRef } from '/@/renderer/features/player/ref/players-ref';
 import { updateSong } from '/@/renderer/features/player/update-remote-song';
+import { getStopAfterCurrent, resetStopAfterCurrent } from '/@/renderer/features/player/state/stop-after-current';
 import {
     useCurrentPlayer,
     useCurrentStatus,
@@ -17,6 +18,7 @@ import {
     usePlayerControls,
     useSetFullScreenPlayerStore,
     useVolume,
+    useSetCurrentTime,
 } from '/@/renderer/store';
 import {
     useGeneralSettings,
@@ -24,6 +26,7 @@ import {
     useSettingsStore,
 } from '/@/renderer/store/settings.store';
 import { PlaybackType } from '/@/shared/types/types';
+import { usePlayerStore } from '/@/renderer/store/player.store';
 
 const PlayerbarContainer = styled.div`
     width: 100vw;
@@ -77,7 +80,8 @@ export const Playerbar = () => {
     const status = useCurrentStatus();
     const player = useCurrentPlayer();
     const muted = useMuted();
-    const { autoNext } = usePlayerControls();
+    const { autoNext, pause } = usePlayerControls();
+    const setCurrentTime = useSetCurrentTime();
     const { expanded: isFullScreenPlayerExpanded } = useFullScreenPlayerStore();
     const setFullScreenPlayerStore = useSetFullScreenPlayerStore();
 
@@ -87,9 +91,37 @@ export const Playerbar = () => {
     };
 
     const autoNextFn = useCallback(() => {
+        console.log('autoNextFn called - song ended naturally');
+        
+        // Check if we should stop after current song
+        if (getStopAfterCurrent()) {
+            console.log('Stopping after current song as requested');
+            resetStopAfterCurrent();
+            
+            // Use proper stop functionality like immediate stop
+            // For web player, we need to reset the players and set time to 0
+            const player1Ref = playersRef?.current?.player1;
+            const player2Ref = playersRef?.current?.player2;
+            
+            if (player1Ref?.getInternalPlayer()) {
+                player1Ref.getInternalPlayer().currentTime = 0;
+                player1Ref.getInternalPlayer().pause();
+            }
+            
+            if (player2Ref?.getInternalPlayer()) {
+                player2Ref.getInternalPlayer().currentTime = 0;
+                player2Ref.getInternalPlayer().pause();
+            }
+            
+            setCurrentTime(0);
+            pause();
+            return;
+        }
+        
+        console.log('Continuing to next song');
         const playerData = autoNext();
         updateSong(playerData.current.song);
-    }, [autoNext]);
+    }, [autoNext, pause, setCurrentTime, playersRef]);
 
     return (
         <PlayerbarContainer
