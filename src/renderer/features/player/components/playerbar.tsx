@@ -26,7 +26,6 @@ import {
     useSettingsStore,
 } from '/@/renderer/store/settings.store';
 import { PlaybackType } from '/@/shared/types/types';
-import { usePlayerStore } from '/@/renderer/store/player.store';
 
 const PlayerbarContainer = styled.div`
     width: 100vw;
