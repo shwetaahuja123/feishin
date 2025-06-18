@@ -522,6 +522,8 @@
         "discordUpdateInterval_description": "the time in seconds between each update (minimum 15 seconds)",
         "doubleClickBehavior": "queue all searched tracks when double clicking",
         "doubleClickBehavior_description": "if true, all matching tracks in a track search will be queued. otherwise, only the clicked one will be queued",
+        "enableModifiedStopButton": "enable modified behaviour of stop button",
+        "enableModifiedStopButton_description": "when enabled, the first click of the stop button will set the playback to stop after the current song ends. clicking again within 3 seconds will stop immediately",
         "enableRemote": "enable remote control server",
         "enableRemote_description": "enables the remote control server to allow other devices to control the application",
         "externalLinks": "show external links",

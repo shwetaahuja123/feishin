@@ -280,6 +280,7 @@ export interface SettingsState {
         audioDeviceId?: null | string;
         crossfadeDuration: number;
         crossfadeStyle: CrossfadeStyle;
+        enableModifiedStopButton: boolean;
         mpvExtraParameters: string[];
         mpvProperties: MpvSettings;
         muted: boolean;
@@ -462,6 +463,7 @@ const initialState: SettingsState = {
         audioDeviceId: undefined,
         crossfadeDuration: 5,
         crossfadeStyle: CrossfadeStyle.EQUALPOWER,
+        enableModifiedStopButton: false,
         mpvExtraParameters: [],
         mpvProperties: {
             audioExclusiveMode: 'no',

@@ -17,7 +17,7 @@ import {
     useSetCurrentTime,
     useShuffleStatus,
 } from '/@/renderer/store';
-import { usePlaybackType } from '/@/renderer/store/settings.store';
+import { usePlaybackSettings, usePlaybackType } from '/@/renderer/store/settings.store';
 import { setAutoNext, setQueue, setQueueNext } from '/@/renderer/utils/set-transcoded-queue-data';
 import { PlaybackType, PlayerRepeat, PlayerShuffle, PlayerStatus } from '/@/shared/types/types';
 
@@ -45,6 +45,7 @@ export const useCenterControls = (args: { playersRef: any }) => {
     const repeatStatus = useRepeatStatus();
     const shuffleStatus = useShuffleStatus();
     const playbackType = usePlaybackType();
+    const playbackSettings = usePlaybackSettings();
     const player1Ref = playersRef?.current?.player1;
     const player2Ref = playersRef?.current?.player2;
     const currentPlayerRef = currentPlayer === 1 ? player1Ref : player2Ref;
@@ -122,6 +123,20 @@ export const useCenterControls = (args: { playersRef: any }) => {
     }, [isMpvPlayer, pause]);
 
     const handleStop = useCallback(() => {
+        if (!playbackSettings.enableModifiedStopButton) {
+            // Simple stop behavior - immediately stop playback
+            if (isMpvPlayer) {
+                mpvPlayer!.stop();
+            } else {
+                stopPlayback();
+            }
+
+            setCurrentTime(0);
+            pause();
+            return;
+        }
+
+        // Modified stop behavior - original implementation
         const newCount = stopClickCount + 1;
         setStopClickCount(newCount);
 
@@ -154,7 +169,7 @@ export const useCenterControls = (args: { playersRef: any }) => {
             setStopClickCount(0);
             resetStopAfterCurrent();
         }
-    }, [isMpvPlayer, pause, setCurrentTime, stopPlayback, stopClickCount]);
+    }, [isMpvPlayer, pause, setCurrentTime, stopPlayback, stopClickCount, playbackSettings.enableModifiedStopButton]);
 
     useEffect(() => {
         return () => {

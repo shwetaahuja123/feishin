@@ -5,6 +5,7 @@ import { lazy, Suspense, useMemo } from 'react';
 import { AudioSettings } from '/@/renderer/features/settings/components/playback/audio-settings';
 import { LyricSettings } from '/@/renderer/features/settings/components/playback/lyric-settings';
 import { ScrobbleSettings } from '/@/renderer/features/settings/components/playback/scrobble-settings';
+import { StopButtonSettings } from '/@/renderer/features/settings/components/playback/stop-button-settings';
 import { TranscodeSettings } from '/@/renderer/features/settings/components/playback/transcode-settings';
 import { useSettingsStore } from '/@/renderer/store';
 import { PlaybackType } from '/@/shared/types/types';
@@ -33,6 +34,7 @@ export const PlaybackTab = () => {
             <TranscodeSettings />
             <ScrobbleSettings />
             <LyricSettings />
+            <StopButtonSettings />
         </Stack>
     );
 };
