@@ -9,6 +9,7 @@ import { shallow } from 'zustand/shallow';
 
 import { PlayerData, QueueData, QueueSong } from '/@/shared/types/domain-types';
 import { Play, PlayerRepeat, PlayerShuffle, PlayerStatus } from '/@/shared/types/types';
+import { resetStopAfterCurrent } from '/@/renderer/features/player/state/stop-after-current';
 
 export interface PlayerSlice extends PlayerState {
     actions: {
@@ -86,6 +87,8 @@ export const usePlayerStore = create<PlayerSlice>()(
                 immer((set, get) => ({
                     actions: {
                         addToQueue: (args) => {
+                            resetStopAfterCurrent();
+
                             const { initialIndex, playType, songs } = args;
                             const songsToAddToQueue = map(songs, (song) => ({
                                 ...song,
@@ -226,6 +229,8 @@ export const usePlayerStore = create<PlayerSlice>()(
                             return get().actions.getPlayerData();
                         },
                         autoNext: () => {
+                            resetStopAfterCurrent();
+
                             const isLastTrack = get().actions.checkIsLastTrack();
                             const { repeat } = get();
 
@@ -308,6 +313,8 @@ export const usePlayerStore = create<PlayerSlice>()(
                             return get().current.index + modifier === queueLength;
                         },
                         clearQueue: () => {
+                            resetStopAfterCurrent();
+
                             set((state) => {
                                 state.queue.default = [];
                                 state.queue.shuffled = [];
@@ -468,6 +475,8 @@ export const usePlayerStore = create<PlayerSlice>()(
                             };
                         },
                         incrementPlayCount: (ids) => {
+                            resetStopAfterCurrent();
+
                             const { default: queue } = get().queue;
                             const foundUniqueIds: string[] = [];
 
@@ -493,6 +502,8 @@ export const usePlayerStore = create<PlayerSlice>()(
                             return foundUniqueIds;
                         },
                         moveToBottomOfQueue: (uniqueIds) => {
+                            resetStopAfterCurrent();
+
                             const queue = get().queue.default;
 
                             const songsToMove = queue.filter((song) =>
@@ -517,6 +528,8 @@ export const usePlayerStore = create<PlayerSlice>()(
                             return get().actions.getPlayerData();
                         },
                         moveToNextOfQueue: (uniqueIds) => {
+                            resetStopAfterCurrent();
+
                             const queue = get().queue.default;
                             const songsToMove = queue.filter((song) =>
                                 uniqueIds.includes(song.uniqueId),
@@ -545,6 +558,8 @@ export const usePlayerStore = create<PlayerSlice>()(
                             return get().actions.getPlayerData();
                         },
                         moveToTopOfQueue: (uniqueIds) => {
+                            resetStopAfterCurrent();
+
                             const queue = get().queue.default;
 
                             const songsToMove = queue.filter((song) =>
@@ -569,6 +584,8 @@ export const usePlayerStore = create<PlayerSlice>()(
                             return get().actions.getPlayerData();
                         },
                         next: () => {
+                            resetStopAfterCurrent();
+
                             const isLastTrack = get().actions.checkIsLastTrack();
                             const { repeat } = get();
 
@@ -621,11 +638,13 @@ export const usePlayerStore = create<PlayerSlice>()(
                             return get().actions.getPlayerData();
                         },
                         pause: () => {
+                            resetStopAfterCurrent();
                             set((state) => {
                                 state.current.status = PlayerStatus.PAUSED;
                             });
                         },
                         play: () => {
+                            resetStopAfterCurrent();
                             set((state) => {
                                 state.current.status = PlayerStatus.PLAYING;
                             });
@@ -637,6 +656,8 @@ export const usePlayerStore = create<PlayerSlice>()(
                             return get().actions.getPlayerData().player2;
                         },
                         previous: () => {
+                            resetStopAfterCurrent();
+
                             const isFirstTrack = get().actions.checkIsFirstTrack();
                             const { repeat } = get();
 
@@ -684,6 +705,8 @@ export const usePlayerStore = create<PlayerSlice>()(
                             return get().actions.getPlayerData();
                         },
                         removeFromQueue: (uniqueIds) => {
+                            resetStopAfterCurrent();
+
                             const queue = get().queue.default;
                             const currentPosition = get().current.index;
                             let queueShift = 0;
@@ -726,6 +749,8 @@ export const usePlayerStore = create<PlayerSlice>()(
                             return get().actions.getPlayerData();
                         },
                         reorderQueue: (rowUniqueIds: string[], afterUniqueId?: string) => {
+                            resetStopAfterCurrent();
+                            
                             // Don't move if dropping on top of a selected row
                             if (afterUniqueId && rowUniqueIds.includes(afterUniqueId)) {
                                 return get().actions.getPlayerData();
@@ -769,6 +794,8 @@ export const usePlayerStore = create<PlayerSlice>()(
                             return get().actions.getPlayerData();
                         },
                         restoreQueue: (data) => {
+                            resetStopAfterCurrent();
+
                             set((state) => {
                                 state.current = {
                                     ...state.current,
@@ -823,6 +850,8 @@ export const usePlayerStore = create<PlayerSlice>()(
                             });
                         },
                         setCurrentTrack: (uniqueId) => {
+                            resetStopAfterCurrent();
+
                             if (get().shuffle === PlayerShuffle.TRACK) {
                                 const defaultIndex = get().queue.default.findIndex(
                                     (song) => song.uniqueId === uniqueId,
@@ -928,6 +957,8 @@ export const usePlayerStore = create<PlayerSlice>()(
                             return foundUniqueIds;
                         },
                         setRepeat: (type: PlayerRepeat) => {
+                            resetStopAfterCurrent();
+
                             set((state) => {
                                 state.repeat = type;
                             });
@@ -935,6 +966,8 @@ export const usePlayerStore = create<PlayerSlice>()(
                             return get().actions.getPlayerData();
                         },
                         setShuffle: (type: PlayerShuffle) => {
+                            resetStopAfterCurrent();
+
                             if (type === PlayerShuffle.NONE) {
                                 const currentSongId = get().current.song?.uniqueId;
 
@@ -993,6 +1026,8 @@ export const usePlayerStore = create<PlayerSlice>()(
                             });
                         },
                         shuffleQueue: () => {
+                            resetStopAfterCurrent();
+                            
                             const queue = get().queue.default;
 
                             if (queue.length > 2) {

@@ -16,6 +16,8 @@ import {
     RiSkipForwardFill,
     RiSpeedFill,
     RiStopFill,
+    RiStopCircleFill,
+    RiMore2Fill,
 } from 'react-icons/ri';
 import styled from 'styled-components';
 
@@ -36,10 +38,12 @@ import {
 } from '/@/renderer/store';
 import {
     useHotkeySettings,
+    usePlaybackSettings,
     usePlaybackType,
     useSettingsStore,
 } from '/@/renderer/store/settings.store';
 import { PlaybackType, PlayerRepeat, PlayerShuffle, PlayerStatus } from '/@/shared/types/types';
+import { getStopAfterCurrent } from '/@/renderer/features/player/state/stop-after-current';
 
 interface CenterControlsProps {
     playersRef: any;
@@ -101,6 +105,7 @@ export const CenterControls = ({ playersRef }: CenterControlsProps) => {
     const skip = useSettingsStore((state) => state.general.skipButtons);
     const buttonSize = useSettingsStore((state) => state.general.buttonSize);
     const playbackType = usePlaybackType();
+    const playbackSettings = usePlaybackSettings();
     const player1 = playersRef?.current?.player1;
     const player2 = playersRef?.current?.player2;
     const status = useCurrentStatus();
@@ -120,6 +125,7 @@ export const CenterControls = ({ playersRef }: CenterControlsProps) => {
         handleSkipBackward,
         handleSkipForward,
         handleStop,
+        handleStopNow,
         handleToggleRepeat,
         handleToggleShuffle,
     } = useCenterControls({ playersRef });
@@ -173,14 +179,33 @@ export const CenterControls = ({ playersRef }: CenterControlsProps) => {
         <>
             <ControlsContainer>
                 <ButtonsContainer>
-                    <PlayerButton
-                        icon={<RiStopFill size={buttonSize} />}
-                        onClick={handleStop}
-                        tooltip={{
-                            label: t('player.stop', { postProcess: 'sentenceCase' }),
-                        }}
-                        variant="tertiary"
-                    />
+                    {!getStopAfterCurrent() ? (
+                        <PlayerButton
+                            icon={<RiStopFill size={buttonSize} />}
+                            onClick={handleStop}
+                            tooltip={{
+                                label: !playbackSettings.enableModifiedStopButton 
+                                    ? t('player.stop', { postProcess: 'sentenceCase' })
+                                    : t('player.stopAfterCurrentSong', { 
+                                        defaultValue: 'Stop after current song',
+                                        postProcess: 'sentenceCase' 
+                                    }),
+                            }}
+                            variant="tertiary"
+                        />
+                    ) : (
+                        <PlayerButton
+                            icon={<RiStopCircleFill size={buttonSize} />}
+                            onClick={handleStopNow}
+                            tooltip={{
+                                label: t('player.stopNow', { 
+                                    defaultValue: 'Stopping after current song. Click to stop now',
+                                    postProcess: 'sentenceCase' 
+                                }),
+                            }}
+                            variant="tertiary"
+                        />
+                    )}
                     <PlayerButton
                         $isActive={shuffle !== PlayerShuffle.NONE}
                         icon={<RiShuffleFill size={buttonSize} />}

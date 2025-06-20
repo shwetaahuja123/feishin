@@ -33,9 +33,6 @@ export const useCenterControls = (args: { playersRef: any }) => {
     const { t } = useTranslation();
     const { playersRef } = args;
 
-    const [stopClickCount, setStopClickCount] = useState(0);
-    const stopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
     const currentPlayer = useCurrentPlayer();
     const { autoNext, next, pause, play, previous, setCurrentIndex, setRepeat, setShuffle } =
         usePlayerControls();
@@ -124,7 +121,7 @@ export const useCenterControls = (args: { playersRef: any }) => {
 
     const handleStop = useCallback(() => {
         if (!playbackSettings.enableModifiedStopButton) {
-            // Simple stop behavior - immediately stop playback
+            // Default stop behavior - immediately stop playback
             if (isMpvPlayer) {
                 mpvPlayer!.stop();
             } else {
@@ -136,48 +133,21 @@ export const useCenterControls = (args: { playersRef: any }) => {
             return;
         }
 
-        // Modified stop behavior - original implementation
-        const newCount = stopClickCount + 1;
-        setStopClickCount(newCount);
+        // When enableModifiedStopButton is true - set stop after current song
+        setStopAfterCurrent(true);
+    }, [isMpvPlayer, pause, setCurrentTime, stopPlayback, playbackSettings.enableModifiedStopButton]);
 
-        if (stopTimeoutRef.current) {
-            clearTimeout(stopTimeoutRef.current);
+    const handleStopNow = useCallback(() => {
+        // Always stop immediately, regardless of settings
+        if (isMpvPlayer) {
+            mpvPlayer!.stop();
+        } else {
+            stopPlayback();
         }
 
-        if (newCount === 1) {
-            toast.show({
-                message: 'Will stop after current song ends. Click again to stop immediately.',
-                type: 'info',
-            });
-            
-            setStopAfterCurrent(true);
-            
-            stopTimeoutRef.current = setTimeout(() => {
-                setStopClickCount(0);
-            }, 3000);
-            
-        } else if (newCount === 2) {
-            if (isMpvPlayer) {
-                mpvPlayer!.stop();
-            } else {
-                stopPlayback();
-            }
-
-            setCurrentTime(0);
-            pause();
-            
-            setStopClickCount(0);
-            resetStopAfterCurrent();
-        }
-    }, [isMpvPlayer, pause, setCurrentTime, stopPlayback, stopClickCount, playbackSettings.enableModifiedStopButton]);
-
-    useEffect(() => {
-        return () => {
-            if (stopTimeoutRef.current) {
-                clearTimeout(stopTimeoutRef.current);
-            }
-        };
-    }, []);
+        setCurrentTime(0);
+        pause();
+    }, [isMpvPlayer, pause, setCurrentTime, stopPlayback]);
 
     const handleToggleShuffle = useCallback(() => {
         if (shuffleStatus === PlayerShuffle.NONE) {
@@ -219,8 +189,6 @@ export const useCenterControls = (args: { playersRef: any }) => {
 
     const handleAutoNext = useCallback(() => {
         if (getStopAfterCurrent()) {
-            resetStopAfterCurrent();
-            setStopClickCount(0);
             
             if (isMpvPlayer) {
                 mpvPlayer!.stop();
@@ -308,15 +276,19 @@ export const useCenterControls = (args: { playersRef: any }) => {
     }, [
         autoNext,
         checkIsLastTrack,
+        isMpvPlayer,
         pause,
         play,
         playbackType,
         repeatStatus,
         resetPlayers,
         setCurrentIndex,
+        setCurrentTime,
+        stopPlayback,
     ]);
 
     const handleNextTrack = useCallback(() => {
+        
         const isLastTrack = checkIsLastTrack();
         setCurrentTime(0);
 
@@ -403,6 +375,8 @@ export const useCenterControls = (args: { playersRef: any }) => {
     ]);
 
     const handlePrevTrack = useCallback(() => {
+        resetStopAfterCurrent();
+        
         const currentTime = isMpvPlayer
             ? usePlayerStore.getState().current.time
             : currentPlayerRef.getCurrentTime();
@@ -831,6 +805,7 @@ export const useCenterControls = (args: { playersRef: any }) => {
         handleSkipBackward,
         handleSkipForward,
         handleStop,
+        handleStopNow,
         handleToggleRepeat,
         handleToggleShuffle,
     };

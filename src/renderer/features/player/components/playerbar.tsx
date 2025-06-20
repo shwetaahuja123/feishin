@@ -91,8 +91,6 @@ export const Playerbar = () => {
 
     const autoNextFn = useCallback(() => {
         if (getStopAfterCurrent()) {
-            resetStopAfterCurrent();
-            
             const player1Ref = playersRef?.current?.player1;
             const player2Ref = playersRef?.current?.player2;
             
