@@ -17,7 +17,6 @@ import {
     RiSpeedFill,
     RiStopFill,
     RiStopCircleFill,
-    RiMore2Fill,
 } from 'react-icons/ri';
 import styled from 'styled-components';
 

@@ -7,7 +7,7 @@ import { LeftControls } from '/@/renderer/features/player/components/left-contro
 import { RightControls } from '/@/renderer/features/player/components/right-controls';
 import { PlayersRef } from '/@/renderer/features/player/ref/players-ref';
 import { updateSong } from '/@/renderer/features/player/update-remote-song';
-import { getStopAfterCurrent, resetStopAfterCurrent } from '/@/renderer/features/player/state/stop-after-current';
+import { getStopAfterCurrent } from '/@/renderer/features/player/state/stop-after-current';
 import {
     useCurrentPlayer,
     useCurrentStatus,

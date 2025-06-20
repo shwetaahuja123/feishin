@@ -1,6 +1,6 @@
 import isElectron from 'is-electron';
 import debounce from 'lodash/debounce';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { toast } from '/@/renderer/components';
