@@ -141,7 +141,8 @@ export const useCenterControls = (args: { playersRef: any }) => {
     const handleStopNow = useCallback(() => {
         // Always stop immediately, regardless of settings
         if (isMpvPlayer) {
-            mpvPlayer!.stop();
+            mpvPlayer!.pause();
+            mpvPlayer!.seekTo(0);
         } else {
             stopPlayback();
         }
@@ -192,7 +193,8 @@ export const useCenterControls = (args: { playersRef: any }) => {
         if (getStopAfterCurrent()) {
             
             if (isMpvPlayer) {
-                mpvPlayer!.stop();
+                mpvPlayer!.pause();
+                mpvPlayer!.seekTo(0);
             } else {
                 stopPlayback();
             }
