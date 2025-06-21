@@ -123,7 +123,8 @@ export const useCenterControls = (args: { playersRef: any }) => {
         if (!playbackSettings.enableModifiedStopButton) {
             // Default stop behavior - immediately stop playback
             if (isMpvPlayer) {
-                mpvPlayer!.stop();
+                mpvPlayer!.pause();
+                mpvPlayer!.seekTo(0);
             } else {
                 stopPlayback();
             }
